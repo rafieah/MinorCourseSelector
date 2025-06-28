@@ -235,7 +235,24 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
+            display: flex; /* Added for centering loading content */
+            justify-content: center; /* Added for centering loading content */
+            align-items: center; /* Added for centering loading content */
         }
+        /* Spinner for loading */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 flex-direction: column;
@@ -357,6 +374,12 @@
         <button id="messageBoxClose">OK</button>
     </div>
 
+    <!-- Loading Overlay and Spinner -->
+    <div id="loadingOverlay" class="overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+
     <script type="module">
         // Minor courses data based on the provided image
         const minorCoursesData = [
@@ -373,7 +396,7 @@
             { department: "HRM", minors: ["Front Office Management", "Management Principles and Business Ethics"] },
             { department: "Political Science", minors: ["Human Rights", "Introduction to International Politics", "A Preface to Indian Constitution"] },
             { department: "Mathematics", minors: ["Mathematical Logic, Set Theory and Combinatorics", "Calculus"] },
-            { department: "Malayalam", minors: ["കവിതയും സാഹിത്യം"] },
+            { department: "Malayalam", minors: ["കവിതാസാഹിത്യം"] },
             { department: "Physics", minors: ["Properties of Matter and Thermodynamics", "Mechanics and Optics"] },
             { department: "Psychology", minors: ["Gateway to Mind and Behaviour", "Basic in Cellular Physiology"] },
             { department: "Statistics", minors: ["Descriptive Statistics for Data Science", "Descriptive statistics", "Introductory Statistics with R"] },
@@ -428,6 +451,7 @@
         const messageBoxTitle = document.getElementById('messageBoxTitle');
         const messageBoxContent = document.getElementById('messageBoxContent');
         const messageBoxClose = document.getElementById('messageBoxClose');
+        const loadingOverlay = document.getElementById('loadingOverlay'); // New loading overlay element
 
         /**
          * Displays a custom message box to the user.
@@ -449,6 +473,20 @@
         function hideMessage() {
             messageOverlay.classList.add('hidden');
             messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Shows the loading overlay.
+         */
+        function showLoading() {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the loading overlay.
+         */
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
         }
 
         /**
@@ -722,7 +760,7 @@
             };
 
             try {
-                // No explicit "Submitting..." message, as per request for simpler submission
+                showLoading(); // Show loading overlay
                 const response = await fetch(googleAppsScriptURL, {
                     method: 'POST',
                     mode: 'no-cors', // Use 'no-cors' for simple requests to Google Apps Script from client-side
@@ -735,6 +773,7 @@
                 // In 'no-cors' mode, response.ok will always be true and response.status will be 0.
                 // We assume success if no network error occurred.
 
+                hideLoading(); // Hide loading overlay
                 // Directly transition to success message and update printable area
                 courseSelectionSection.classList.add('hidden');
                 submissionMessage.classList.remove('hidden');
@@ -746,6 +785,7 @@
 
             } catch (error) {
                 console.error("Error submitting data to Google Sheet:", error);
+                hideLoading(); // Hide loading overlay even on error
                 showMessage("Submission Failed", "There was an error submitting your selection. Please check your internet connection and the Apps Script URL. " + error.message, true);
             }
         }
