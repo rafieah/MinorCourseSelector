@@ -11,8 +11,8 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #eef2f8; /* Lighter background to match image */
-            background-image: linear-gradient(to bottom, #f0f2f5, #eef2f8); /* Subtle gradient */
+            background-color: #ffffff; /* Changed to pure white */
+            /* Removed background-image linear-gradient */
             display: flex;
             flex-direction: column;
             justify-content: center; /* Center vertically */
@@ -26,19 +26,29 @@
             margin-bottom: 40px; /* More space below header */
             color: #2c3e50;
         }
+        .header-section img {
+            max-width: 500px; /* Estimated width to visually match the title */
+            width: 100%; /* Ensure it's responsive and scales down */
+            height: auto;
+            margin: 0 auto 15px auto; /* Center the image horizontally and add space below */
+            display: block; /* Make it a block element to apply margin auto */
+        }
         .header-section h1 {
             font-size: 2.75rem; /* Larger main title */
             font-weight: 800; /* Extra bold */
             color: #2c3e50; /* Dark blue/grey for title */
             margin-bottom: 8px;
             letter-spacing: -0.025em; /* Slightly tighter letter spacing */
+            max-width: 500px; /* Constrain the text width to match the logo */
+            margin-left: auto; /* Center the h1 */
+            margin-right: auto; /* Center the h1 */
         }
         .header-section p {
             font-size: 1.15rem; /* Larger subtitle */
             color: #607d8b; /* Softer grey for subtitle */
         }
         .container {
-            max-width: 960px; /* Wider container to accommodate side-by-side inputs */
+            max-width: 1080px; /* Increased max-width for wider fields */
             width: 100%;
             background-color: #ffffff;
             padding: 40px;
@@ -81,7 +91,7 @@
         }
         input, select {
             width: 100%;
-            padding: 14px; /* Slightly less padding to match image */
+            padding: 48px 14px; /* Significantly increased vertical padding (top/bottom) */
             border: 1px solid #cbd5e0;
             border-radius: 8px; /* Slightly less rounded inputs */
             box-sizing: border-box;
@@ -261,6 +271,7 @@
 </head>
 <body>
     <div class="header-section">
+        <img src="https://www.providencecollegecalicut.ac.in/wp-content/uploads/2024/12/pwc-logo-left.png" alt="Providence Women's College Logo" onerror="this.onerror=null;this.src='https://placehold.co/120x120/E0E7FF/4F46E5?text=Logo';" />
         <h1>Minor Course Selector</h1>
         <p>Providence Women's College (Autonomous), Kozhikode</p>
     </div>
@@ -679,7 +690,8 @@
                     if (!card.classList.contains('selected')) {
                         card.classList.add('hidden'); // Hide unselected cards
                     }
-                });
+                }
+                );
                 submitBtn.classList.remove('hidden');
                 changeOptionsBtn.classList.remove('hidden');
             } else {
@@ -710,6 +722,7 @@
             };
 
             try {
+                // No explicit "Submitting..." message, as per request for simpler submission
                 const response = await fetch(googleAppsScriptURL, {
                     method: 'POST',
                     mode: 'no-cors', // Use 'no-cors' for simple requests to Google Apps Script from client-side
@@ -721,17 +734,15 @@
 
                 // In 'no-cors' mode, response.ok will always be true and response.status will be 0.
                 // We assume success if no network error occurred.
-                // For actual error handling, you'd need a CORS-enabled backend or different approach.
+
+                // Directly transition to success message and update printable area
+                courseSelectionSection.classList.add('hidden');
+                submissionMessage.classList.remove('hidden');
+                updatePrintableArea(submissionDetails);
 
                 showMessage("Success!", "Your minor course selection has been submitted successfully to the college.", false);
                 console.log("Submission initiated. Check your Google Sheet for data.");
 
-                // Transition UI to submission confirmation
-                courseSelectionSection.classList.add('hidden');
-                submissionMessage.classList.remove('hidden');
-
-                // Update printable area with current data
-                updatePrintableArea(submissionDetails);
 
             } catch (error) {
                 console.error("Error submitting data to Google Sheet:", error);
@@ -763,6 +774,7 @@
          * Prepares the printable area by making it visible and hiding other sections.
          */
         function preparePrintArea() {
+            // This function is only for preparing the DOM for printing
             printableArea.classList.remove('hidden');
             studentDetailsForm.classList.add('hidden');
             courseSelectionSection.classList.add('hidden');
