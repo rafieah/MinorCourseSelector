@@ -12,7 +12,6 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #ffffff; /* Changed to pure white */
-            /* Removed background-image linear-gradient */
             display: flex;
             flex-direction: column;
             justify-content: center; /* Center vertically */
@@ -357,6 +356,13 @@
 
         <div id="courseSelectionSection" class="hidden no-print">
             <h3>2. Select Your Minor Courses (Select two)</h3>
+            <div class="form-group mb-8">
+                <label for="filterDepartmentSelect">Filter by Department</label>
+                <select id="filterDepartmentSelect">
+                    <option value="all">All Departments</option>
+                    <!-- Filter options will be loaded here -->
+                </select>
+            </div>
             <div id="availableCourses" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Courses will be loaded here -->
             </div>
@@ -421,15 +427,16 @@
             { department: "English", minors: ["Fundamentals of content creation", "The Language of Digital Space: English and New Media"] },
             { department: "Hindi", minors: ["Anuvad- Prakriya Aur Pravidhi"] },
             { department: "History", minors: ["Food - A Global Perspective", "Gender History", "Introduction to Historical Tourism"] },
-            { department: "HRM", minors: ["Front Office Management", "Management Principles and Business Ethics"] },
+            { department: "Human Resource Management", minors: ["Front Office Management", "Management Principles and Business Ethics"] },
             { department: "Political Science", minors: ["Human Rights", "Introduction to International Politics", "A Preface to Indian Constitution"] },
             { department: "Mathematics", minors: ["Mathematical Logic, Set Theory and Combinatorics", "Calculus"] },
             { department: "Malayalam", minors: ["കവിതാസാഹിത്യം"] },
             { department: "Physics", minors: ["Properties of Matter and Thermodynamics", "Mechanics and Optics"] },
-            { department: "Psychology", minors: ["Gateway to Mind and Behaviour", "Basic in Cellular Physiology"] },
+            { department: "Physiology", minors: ["Basic in Cellular Physiology"] },
+            { department: "Psychology", minors: ["Gateway to Mind and Behaviour"] },
             { department: "Statistics", minors: ["Descriptive Statistics for Data Science", "Descriptive statistics", "Introductory Statistics with R"] },
             { department: "Social Work", minors: ["Social Analysis and Strategies of Social Change", "Fundamentals of Professional Social Work"] },
-            { department: "TTM", minors: ["Fundamentals of Tourism", "Tourism Business"] },
+            { department: "Travel & Tourism Management", minors: ["Fundamentals of Tourism", "Tourism Business"] },
             { department: "Zoology", minors: ["Foundations of Environmental Biology & Animal Behaviour"] }
         ];
 
@@ -441,7 +448,7 @@
         const courseToDepartmentMap = {};
         minorCoursesData.forEach(deptData => {
             deptData.minors.forEach(minor => {
-                // Handle cases where a minor might be offered by multiple departments by picking the first one
+                // This ensures each minor maps to *a* department. If a minor is in multiple, it picks the first.
                 if (!courseToDepartmentMap[minor]) {
                     courseToDepartmentMap[minor] = deptData.department;
                 }
@@ -455,10 +462,11 @@
         const printableArea = document.getElementById('printableArea');
 
         const studentNameInput = document.getElementById('studentName');
-        const admissionNumberInput = document.getElementById('admissionNumber'); // New input
+        const admissionNumberInput = document.getElementById('admissionNumber');
         const phoneNumberInput = document.getElementById('phoneNumber');
         const emailInput = document.getElementById('email');
         const departmentSelect = document.getElementById('department');
+        const filterDepartmentSelect = document.getElementById('filterDepartmentSelect'); // New filter select
 
         const availableCoursesDiv = document.getElementById('availableCourses');
         const submitBtn = document.getElementById('submitBtn');
@@ -468,7 +476,7 @@
 
         // Error message elements
         const nameError = document.getElementById('nameError');
-        const admissionError = document.getElementById('admissionError'); // New error element
+        const admissionError = document.getElementById('admissionError');
         const phoneError = document.getElementById('phoneError');
         const emailError = document.getElementById('emailError');
         const departmentError = document.getElementById('departmentError');
@@ -479,7 +487,7 @@
         const messageBoxTitle = document.getElementById('messageBoxTitle');
         const messageBoxContent = document.getElementById('messageBoxContent');
         const messageBoxClose = document.getElementById('messageBoxClose');
-        const loadingOverlay = document.getElementById('loadingOverlay'); // New loading overlay element
+        const loadingOverlay = document.getElementById('loadingOverlay');
 
         /**
          * Displays a custom message box to the user.
@@ -490,7 +498,7 @@
         function showMessage(title, message, isError = false) {
             messageBoxTitle.textContent = title;
             messageBoxContent.textContent = message;
-            messageBoxTitle.style.color = isError ? '#ef4444' : '#6366f1'; /* Adjusted colors for messages */
+            messageBoxTitle.style.color = isError ? '#ef4444' : '#6366f1';
             messageOverlay.classList.remove('hidden');
             messageBox.classList.remove('hidden');
         }
@@ -533,7 +541,7 @@
          * @returns {boolean} True if the phone number is valid, false otherwise.
          */
         function validatePhoneNumber(phone) {
-            const re = /^\d{10}$/; // Assumes a 10-digit phone number
+            const re = /^\d{10}$/;
             return re.test(String(phone));
         }
 
@@ -547,7 +555,7 @@
 
             // Clear previous errors
             nameError.classList.add('hidden');
-            admissionError.classList.add('hidden'); // Clear new error
+            admissionError.classList.add('hidden');
             phoneError.classList.add('hidden');
             emailError.classList.add('hidden');
             departmentError.classList.add('hidden');
@@ -556,7 +564,7 @@
                 nameError.classList.remove('hidden');
                 isValid = false;
             }
-            if (admissionNumberInput.value.trim() === '') { // New validation
+            if (admissionNumberInput.value.trim() === '') {
                 admissionError.classList.remove('hidden');
                 isValid = false;
             }
@@ -577,22 +585,39 @@
         }
 
         /**
-         * Populates the department dropdown with data from `minorCoursesData`.
+         * Populates the department dropdown with all major departments.
          */
         function loadDepartments() {
             const currentSelectedDept = departmentSelect.value;
-            departmentSelect.innerHTML = '<option value="">-- Choose your department --</option>'; // Updated placeholder
+            departmentSelect.innerHTML = '<option value="">-- Choose your department --</option>';
 
-            minorCoursesData.forEach(data => {
+            const uniqueDepartments = new Set();
+            minorCoursesData.forEach(data => uniqueDepartments.add(data.department));
+
+            Array.from(uniqueDepartments).sort().forEach(dept => {
                 const option = document.createElement('option');
-                option.value = data.department;
-                option.textContent = data.department;
+                option.value = dept;
+                option.textContent = dept;
                 departmentSelect.appendChild(option);
             });
 
-            if (currentSelectedDept && minorCoursesData.some(d => d.department === currentSelectedDept)) {
+            if (currentSelectedDept && uniqueDepartments.has(currentSelectedDept)) {
                 departmentSelect.value = currentSelectedDept;
             }
+        }
+
+        /**
+         * Populates the filter department dropdown with all departments that offer minor courses.
+         */
+        function populateFilterDepartments() {
+            filterDepartmentSelect.innerHTML = '<option value="all">All Departments</option>';
+            const uniqueMinorOfferingDepartments = new Set(Object.values(courseToDepartmentMap));
+            Array.from(uniqueMinorOfferingDepartments).sort().forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                filterDepartmentSelect.appendChild(option);
+            });
         }
 
         /**
@@ -600,19 +625,19 @@
          */
         function setupUI() {
             messageBoxClose.addEventListener('click', hideMessage);
-            loadDepartments(); // Populate department dropdown on initial load
+            loadDepartments(); // Populate major department dropdown on initial load
+            populateFilterDepartments(); // Populate filter department dropdown
 
-            // Handle department selection change
+            // Handle major department selection change
             departmentSelect.addEventListener('change', () => {
-                // Store current form inputs
                 studentInfo.name = studentNameInput.value.trim();
-                studentInfo.admissionNumber = admissionNumberInput.value.trim(); // Store new field
+                studentInfo.admissionNumber = admissionNumberInput.value.trim();
                 studentInfo.phoneNumber = phoneNumberInput.value.trim();
                 studentInfo.email = emailInput.value.trim();
                 studentInfo.department = departmentSelect.value;
 
                 if (studentInfo.department === "") {
-                    courseSelectionSection.classList.add('hidden'); // Hide course section if no department selected
+                    courseSelectionSection.classList.add('hidden');
                     return;
                 }
 
@@ -620,12 +645,16 @@
                     selectedDepartment = studentInfo.department;
                     studentDetailsForm.classList.add('hidden');
                     courseSelectionSection.classList.remove('hidden');
-                    displayAvailableCourses();
+                    displayAvailableCourses(); // Display courses based on new department
                 } else {
                     showMessage("Validation Error", "Please fill in all your personal details correctly before selecting a department.", true);
-                    // Reset department selection if validation fails, prompting user to re-select after fixing details
-                    departmentSelect.value = "";
+                    departmentSelect.value = ""; // Reset department selection if validation fails
                 }
+            });
+
+            // Handle filter department selection change
+            filterDepartmentSelect.addEventListener('change', () => {
+                displayAvailableCourses(); // Re-display courses based on new filter
             });
 
             submitBtn.addEventListener('click', async () => {
@@ -638,7 +667,7 @@
 
             changeOptionsBtn.addEventListener('click', () => {
                 selectedCourses = []; // Reset selections
-                displayAvailableCourses(); // Re-render to show all options based on current department
+                displayAvailableCourses(); // Re-render to show all options based on current department and filter
             });
 
             changeDepartmentBtn.addEventListener('click', () => {
@@ -647,7 +676,8 @@
                 courseSelectionSection.classList.add('hidden');
                 submissionMessage.classList.add('hidden');
                 selectedCourses = []; // Clear course selections when changing department
-                loadDepartments(); // Re-populate departments to ensure state consistency
+                filterDepartmentSelect.value = "all"; // Reset filter
+                loadDepartments(); // Re-populate major departments
             });
 
             printBtn.addEventListener('click', () => {
@@ -657,35 +687,48 @@
         }
 
         /**
-         * Displays all available minor courses, explicitly excluding those from the student's own department.
+         * Displays all available minor courses, explicitly excluding those from the student's own department
+         * and optionally filtering by selected department.
          */
         function displayAvailableCourses() {
             availableCoursesDiv.innerHTML = ''; // Clear previous courses
 
-            const studentDeptCourses = minorCoursesData.find(data => data.department === selectedDepartment)?.minors || [];
+            const studentMajorDeptCourses = minorCoursesData.find(data => data.department === selectedDepartment)?.minors || [];
+            const selectedFilterDept = filterDepartmentSelect.value;
 
-            // Get all unique minor courses from the dataset
-            let allUniqueMinorCourses = new Set();
-            minorCoursesData.forEach(data => {
-                data.minors.forEach(minor => allUniqueMinorCourses.add(minor));
+            let allAvailableMinorCourses = [];
+            // Collect all unique minor courses from all departments
+            minorCoursesData.forEach(deptData => {
+                deptData.minors.forEach(minor => {
+                    // Only add if it's not from the student's major department
+                    if (!studentMajorDeptCourses.includes(minor)) {
+                        allAvailableMinorCourses.push(minor);
+                    }
+                });
             });
 
-            // Filter out courses offered by the student's own department
-            const eligibleMinorCourses = Array.from(allUniqueMinorCourses).filter(course =>
-                !studentDeptCourses.includes(course)
-            );
+            // Filter by selected department if not "all"
+            let filteredMinorCourses = [];
+            if (selectedFilterDept !== "all") {
+                const coursesFromFilterDept = minorCoursesData.find(data => data.department === selectedFilterDept)?.minors || [];
+                filteredMinorCourses = allAvailableMinorCourses.filter(course =>
+                    coursesFromFilterDept.includes(course)
+                );
+            } else {
+                filteredMinorCourses = [...new Set(allAvailableMinorCourses)]; // Remove duplicates from "all"
+            }
 
             // Sort eligible courses alphabetically for consistent display
-            eligibleMinorCourses.sort();
+            filteredMinorCourses.sort();
 
-            if (eligibleMinorCourses.length === 0) {
-                availableCoursesDiv.innerHTML = '<p class="text-center text-gray-500 text-lg py-8">No minor courses available for selection from other departments.</p>';
+            if (filteredMinorCourses.length === 0) {
+                availableCoursesDiv.innerHTML = '<p class="text-center text-gray-500 text-lg py-8">No minor courses available for selection based on current filters.</p>';
                 submitBtn.classList.add('hidden');
                 changeOptionsBtn.classList.add('hidden');
                 return;
             }
 
-            eligibleMinorCourses.forEach(course => {
+            filteredMinorCourses.forEach(course => {
                 const courseCard = document.createElement('div');
                 courseCard.classList.add('course-card');
                 courseCard.dataset.courseName = course; // Store course name for easy lookup
@@ -756,8 +799,7 @@
                     if (!card.classList.contains('selected')) {
                         card.classList.add('hidden'); // Hide unselected cards
                     }
-                }
-                );
+                });
                 submitBtn.classList.remove('hidden');
                 changeOptionsBtn.classList.remove('hidden');
             } else {
@@ -780,7 +822,7 @@
 
             const submissionDetails = {
                 name: studentInfo.name,
-                admissionNumber: studentInfo.admissionNumber, // Add new field to submission
+                admissionNumber: studentInfo.admissionNumber,
                 phoneNumber: studentInfo.phoneNumber,
                 email: studentInfo.email,
                 department: studentInfo.department,
@@ -824,7 +866,7 @@
          */
         function updatePrintableArea(data) {
             document.getElementById('printName').textContent = data.name;
-            document.getElementById('printAdmissionNumber').textContent = data.admissionNumber; // Update new field in print
+            document.getElementById('printAdmissionNumber').textContent = data.admissionNumber;
             document.getElementById('printPhone').textContent = data.phoneNumber;
             document.getElementById('printEmail').textContent = data.email;
             document.getElementById('printDepartment').textContent = data.department;
