@@ -252,6 +252,55 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Styles for the new "Selected Courses" section */
+        #selectedCoursesDisplay {
+            background-color: #f8fafc; /* Light background for the section */
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        #selectedCoursesDisplay .selected-course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e2e8f0; /* Dashed separator */
+            font-size: 1.05rem;
+            color: #334155; /* Slightly darker text */
+        }
+        #selectedCoursesDisplay .selected-course-item:last-child {
+            border-bottom: none; /* No border for the last item */
+        }
+        #selectedCoursesDisplay .selected-course-item .remove-btn {
+            background: none;
+            border: none;
+            color: #ef4444; /* Red for remove button */
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.2s ease-in-out;
+        }
+        #selectedCoursesDisplay .selected-course-item .remove-btn:hover {
+            background-color: #fee2e2; /* Light red hover */
+        }
+        #selectedCoursesDisplay h4 {
+            font-size: 1.25rem; /* Sub-heading for selected courses */
+            font-weight: 700;
+            color: #344054;
+            margin-bottom: 15px;
+        }
+
+        /* Prominent filter department label */
+        #filterDepartmentSelectLabel {
+            font-size: 1.15rem; /* Larger font size */
+            font-weight: 700; /* Bolder */
+            color: #344054; /* Darker color */
+            margin-bottom: 12px; /* More space below */
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 flex-direction: column;
@@ -356,8 +405,17 @@
 
         <div id="courseSelectionSection" class="hidden no-print">
             <h3>2. Select Your Minor Courses (Select two)</h3>
+
+            <!-- New: Selected Courses Display Section -->
+            <div id="selectedCoursesDisplay" class="hidden">
+                <h4>Your Selections:</h4>
+                <div id="selectedCoursesList">
+                    <!-- Selected courses will be rendered here -->
+                </div>
+            </div>
+
             <div class="form-group mb-8">
-                <label for="filterDepartmentSelect">Filter by Department</label>
+                <label for="filterDepartmentSelect" id="filterDepartmentSelectLabel">Select Department</label>
                 <select id="filterDepartmentSelect">
                     <option value="all">All Departments</option>
                     <!-- Filter options will be loaded here -->
@@ -467,6 +525,8 @@
         const emailInput = document.getElementById('email');
         const departmentSelect = document.getElementById('department');
         const filterDepartmentSelect = document.getElementById('filterDepartmentSelect'); // New filter select
+        const selectedCoursesDisplay = document.getElementById('selectedCoursesDisplay'); // New selected courses display
+        const selectedCoursesList = document.getElementById('selectedCoursesList'); // List within selected courses display
 
         const availableCoursesDiv = document.getElementById('availableCourses');
         const submitBtn = document.getElementById('submitBtn');
@@ -654,6 +714,11 @@
 
             // Handle filter department selection change
             filterDepartmentSelect.addEventListener('change', () => {
+                const filterValue = filterDepartmentSelect.value;
+                if (filterValue !== 'all' && filterValue === selectedDepartment) {
+                    showMessage("Invalid Filter", "You cannot select a minor course from your own major department. Please choose another department or 'All Departments'.", true);
+                    filterDepartmentSelect.value = 'all'; // Reset filter to 'All Departments'
+                }
                 displayAvailableCourses(); // Re-display courses based on new filter
             });
 
@@ -687,53 +752,42 @@
         }
 
         /**
-         * Displays all available minor courses, explicitly excluding those from the student's own department
-         * and optionally filtering by selected department.
+         * Displays all available minor courses, explicitly excluding those from the student's own department.
+         * Filtering by selected department is handled by updateCourseCardStates.
          */
         function displayAvailableCourses() {
             availableCoursesDiv.innerHTML = ''; // Clear previous courses
 
             const studentMajorDeptCourses = minorCoursesData.find(data => data.department === selectedDepartment)?.minors || [];
-            const selectedFilterDept = filterDepartmentSelect.value;
 
-            let allAvailableMinorCourses = [];
-            // Collect all unique minor courses from all departments
+            // Get all unique minor courses from the dataset, excluding those from the student's major department
+            let eligibleMinorCourses = [];
             minorCoursesData.forEach(deptData => {
                 deptData.minors.forEach(minor => {
-                    // Only add if it's not from the student's major department
                     if (!studentMajorDeptCourses.includes(minor)) {
-                        allAvailableMinorCourses.push(minor);
+                        eligibleMinorCourses.push(minor);
                     }
                 });
             });
 
-            // Filter by selected department if not "all"
-            let filteredMinorCourses = [];
-            if (selectedFilterDept !== "all") {
-                const coursesFromFilterDept = minorCoursesData.find(data => data.department === selectedFilterDept)?.minors || [];
-                filteredMinorCourses = allAvailableMinorCourses.filter(course =>
-                    coursesFromFilterDept.includes(course)
-                );
-            } else {
-                filteredMinorCourses = [...new Set(allAvailableMinorCourses)]; // Remove duplicates from "all"
-            }
+            // Remove duplicates
+            eligibleMinorCourses = [...new Set(eligibleMinorCourses)];
 
             // Sort eligible courses alphabetically for consistent display
-            filteredMinorCourses.sort();
+            eligibleMinorCourses.sort();
 
-            if (filteredMinorCourses.length === 0) {
-                availableCoursesDiv.innerHTML = '<p class="text-center text-gray-500 text-lg py-8">No minor courses available for selection based on current filters.</p>';
+            if (eligibleMinorCourses.length === 0) {
+                availableCoursesDiv.innerHTML = '<p class="text-center text-gray-500 text-lg py-8">No minor courses available for selection from other departments.</p>';
                 submitBtn.classList.add('hidden');
                 changeOptionsBtn.classList.add('hidden');
                 return;
             }
 
-            filteredMinorCourses.forEach(course => {
+            eligibleMinorCourses.forEach(course => {
                 const courseCard = document.createElement('div');
                 courseCard.classList.add('course-card');
                 courseCard.dataset.courseName = course; // Store course name for easy lookup
 
-                // Add course name and department to the card
                 const courseNameDiv = document.createElement('div');
                 courseNameDiv.classList.add('course-name');
                 courseNameDiv.textContent = course;
@@ -745,10 +799,12 @@
                 courseCard.appendChild(courseNameDiv);
                 courseCard.appendChild(offeredByDiv);
 
+                // FIX: Changed 'cardElement' to 'courseCard'
                 courseCard.addEventListener('click', () => toggleCourseSelection(courseCard, course));
                 availableCoursesDiv.appendChild(courseCard);
             });
-            updateCourseCardStates(); // Initial state update for selected/hidden cards
+            updateCourseCardStates(); // Apply initial filtering and selection states
+            updateSelectedCoursesDisplay(); // Update the new selected courses section
         }
 
         /**
@@ -770,45 +826,107 @@
                     cardElement.classList.add('selected');
                 } else {
                     showMessage("Selection Limit", "You can only select two minor courses.", true);
+                    return; // Prevent selection if limit reached
                 }
             }
             updateCourseCardStates(); // Update UI after selection change
+            updateSelectedCoursesDisplay(); // Update the new selected courses section
         }
 
         /**
-         * Updates the visual state of all course cards (selected/deselected).
-         * Also controls the visibility of submit/change options buttons.
+         * Updates the visual state of all course cards (selected/deselected) and applies filtering.
          */
         function updateCourseCardStates() {
             const courseCards = availableCoursesDiv.querySelectorAll('.course-card');
+            const selectedFilterDept = filterDepartmentSelect.value;
+            const studentMajorDeptCourses = minorCoursesData.find(data => data.department === selectedDepartment)?.minors || [];
 
-            // Step 1: Update selected/deselected visual states
             courseCards.forEach(card => {
                 const courseName = card.dataset.courseName;
-                if (selectedCourses.includes(courseName)) {
+                const courseOfferingDepartment = courseToDepartmentMap[courseName];
+                const isSelected = selectedCourses.includes(courseName);
+
+                // --- First, handle the 'selected' visual class ---
+                if (isSelected) {
                     card.classList.add('selected');
                 } else {
                     card.classList.remove('selected');
                 }
+                // --- End of 'selected' visual class handling ---
+
+
+                // --- Now, handle the 'hidden' visibility logic ---
+                // If two courses are selected, only show the selected ones.
+                if (selectedCourses.length === 2) {
+                    if (isSelected) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden'); // Hide all non-selected cards
+                    }
+                } else {
+                    // If less than two courses are selected, apply normal filtering logic
+                    const isFromStudentMajorDept = studentMajorDeptCourses.includes(courseName);
+                    const matchesFilter = (selectedFilterDept === 'all' || courseOfferingDepartment === selectedFilterDept);
+
+                    // Show if it's *not* from the student's major department AND it matches the filter
+                    if (!isFromStudentMajorDept && matchesFilter) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+                // --- End of 'hidden' visibility logic ---
             });
 
-            // Step 2: Manage visibility based on selection count
+            // Button visibility logic remains the same
             if (selectedCourses.length === 2) {
-                // If two courses are selected, hide all unselected cards
-                courseCards.forEach(card => {
-                    if (!card.classList.contains('selected')) {
-                        card.classList.add('hidden'); // Hide unselected cards
-                    }
-                });
                 submitBtn.classList.remove('hidden');
                 changeOptionsBtn.classList.remove('hidden');
             } else {
-                // If less than two courses are selected, ensure all eligible cards are visible
-                courseCards.forEach(card => {
-                    card.classList.remove('hidden'); // Show all cards again
-                });
                 submitBtn.classList.add('hidden');
                 changeOptionsBtn.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Updates the display of selected courses in the "Your Selections" section.
+         */
+        function updateSelectedCoursesDisplay() {
+            selectedCoursesList.innerHTML = ''; // Clear previous items
+
+            if (selectedCourses.length > 0) {
+                selectedCoursesDisplay.classList.remove('hidden');
+                selectedCourses.forEach(course => {
+                    const courseItem = document.createElement('div');
+                    courseItem.classList.add('selected-course-item');
+                    const offeredBy = courseToDepartmentMap[course] ? ` (${courseToDepartmentMap[course]})` : '';
+                    courseItem.innerHTML = `
+                        <span>${course} ${offeredBy}</span>
+                        <button class="remove-btn" data-course-name="${course}">&times;</button>
+                    `;
+                    selectedCoursesList.appendChild(courseItem);
+
+                    // Add event listener to the remove button
+                    courseItem.querySelector('.remove-btn').addEventListener('click', (event) => {
+                        const courseToRemove = event.target.dataset.courseName;
+                        // Find the corresponding card element to pass to toggleCourseSelection
+                        const cardElement = availableCoursesDiv.querySelector(`[data-course-name="${courseToRemove}"]`);
+                        if (cardElement) {
+                            toggleCourseSelection(cardElement, courseToRemove);
+                        } else {
+                            // If the card is not currently in the DOM (e.g., due to filtering)
+                            // manually remove from selectedCourses and update display
+                            const index = selectedCourses.indexOf(courseToRemove);
+                            if (index > -1) {
+                                selectedCourses.splice(index, 1);
+                                updateSelectedCoursesDisplay();
+                                updateCourseCardStates();
+                            }
+                        }
+                    });
+                });
+            } else {
+                selectedCoursesDisplay.classList.add('hidden');
             }
         }
 
