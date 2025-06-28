@@ -266,6 +266,13 @@
             }
         }
         @media print {
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact; /* For background colors/images on some browsers */
+                box-sizing: border-box; /* Crucial for print layout consistency */
+                overflow: hidden; /* Prevent horizontal scrolling/blank pages */
+            }
             body * {
                 visibility: hidden;
             }
@@ -280,6 +287,25 @@
                 padding: 20px;
                 box-sizing: border-box;
             }
+            #printableArea .print-logo { /* Style for logo within printable area */
+                max-width: 150px; /* Adjust size for print */
+                height: auto;
+                margin: 20px auto; /* Center and add space */
+                display: block;
+            }
+            #printableArea .print-title {
+                font-size: 1.8rem; /* Adjust title size for print */
+                font-weight: 800;
+                color: #2c3e50;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            #printableArea .print-subtitle {
+                font-size: 1rem;
+                color: #607d8b;
+                text-align: center;
+                margin-bottom: 20px;
+            }
             .no-print {
                 display: none !important;
             }
@@ -287,7 +313,7 @@
     </style>
 </head>
 <body>
-    <div class="header-section">
+    <div class="header-section no-print"> <!-- Add no-print to hide this section during print -->
         <img src="https://www.providencecollegecalicut.ac.in/wp-content/uploads/2024/12/pwc-logo-left.png" alt="Providence Women's College Logo" onerror="this.onerror=null;this.src='https://placehold.co/120x120/E0E7FF/4F46E5?text=Logo';" />
         <h1>Minor Course Selector</h1>
         <p>Providence Women's College (Autonomous), Kozhikode</p>
@@ -353,7 +379,9 @@
 
         <!-- Printable Area -->
         <div id="printableArea" class="hidden">
-            <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Minor Course Selection Confirmation</h2>
+            <img src="https://www.providencecollegecalicut.ac.in/wp-content/uploads/2024/12/pwc-logo-left.png" alt="Providence Women's College Logo" class="print-logo" onerror="this.onerror=null;this.src='https://placehold.co/120x120/E0E7FF/4F46E5?text=Logo';" />
+            <h2 class="print-title">Minor Course Selection Confirmation</h2>
+            <p class="print-subtitle">Providence Women's College (Autonomous), Kozhikode</p>
             <div class="mb-4">
                 <p class="text-lg font-semibold">Student Name: <span id="printName" class="font-normal"></span></p>
                 <p class="text-lg font-semibold">Admission Number: <span id="printAdmissionNumber" class="font-normal"></span></p>
