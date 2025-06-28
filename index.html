@@ -3,460 +3,775 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minor Course Selector</title>
+    <title>Minor Course Selection</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #eef2f8; /* Lighter background to match image */
+            background-image: linear-gradient(to bottom, #f0f2f5, #eef2f8); /* Subtle gradient */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center vertically */
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px; /* More space below header */
+            color: #2c3e50;
+        }
+        .header-section h1 {
+            font-size: 2.75rem; /* Larger main title */
+            font-weight: 800; /* Extra bold */
+            color: #2c3e50; /* Dark blue/grey for title */
+            margin-bottom: 8px;
+            letter-spacing: -0.025em; /* Slightly tighter letter spacing */
+        }
+        .header-section p {
+            font-size: 1.15rem; /* Larger subtitle */
+            color: #607d8b; /* Softer grey for subtitle */
+        }
+        .container {
+            max-width: 960px; /* Wider container to accommodate side-by-side inputs */
+            width: 100%;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); /* Deeper, more noticeable shadow */
+            transition: all 0.3s ease-in-out; /* Smooth transition for section changes */
+        }
+        h2 { /* For section titles like "1. Enter Your Details" */
+            font-size: 1.6rem; /* Slightly smaller than main title but prominent */
+            font-weight: 700; /* Bold */
+            color: #344054;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #e0e7ee; /* Subtle separator line */
+            padding-bottom: 16px; /* Padding below separator */
+        }
+        h3 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 28px;
+        }
+        .form-row {
+            display: flex;
+            gap: 24px; /* Space between side-by-side inputs */
+            margin-bottom: 28px;
+        }
+        .form-row .form-group {
+            flex: 1; /* Make form groups take equal width */
+            margin-bottom: 0; /* Reset margin for inner groups */
+        }
+        .form-group {
+            margin-bottom: 28px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #4a5568; /* Adjusted label color */
+            font-size: 0.95rem; /* Slightly smaller label font for consistency with image */
+        }
+        input, select {
+            width: 100%;
+            padding: 14px; /* Slightly less padding to match image */
+            border: 1px solid #cbd5e0;
+            border-radius: 8px; /* Slightly less rounded inputs */
+            box-sizing: border-box;
+            font-size: 16px;
+            color: #2d3748;
+            background-color: #f9fafb; /* Light grey background for inputs */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); /* More subtle inner shadow */
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1; /* Main accent color */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Softer focus shadow */
         }
         .course-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff; /* White background for course cards */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100px;
         }
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        .course-card .course-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
         }
-        .selected {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
+        .course-card .offered-by {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        .course-card.selected {
+            border-color: #6366f1;
+            background-color: #eef2ff;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.15);
+            color: #1a202c;
             transform: translateY(-2px);
         }
-        .disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
+        .course-card.hidden { /* Added for hiding unselected courses */
+            display: none !important;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        .button {
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1rem; /* Standard button font size */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); /* Softer button shadow */
         }
-
-        /* Print-specific styles */
+        .button-primary {
+            background-color: #6366f1; /* Primary purple */
+            color: #ffffff;
+        }
+        .button-primary:hover {
+            background-color: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+        }
+        .button-primary:active {
+            background-color: #4338ca;
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .button-secondary {
+            background-color: #e0e7ff; /* Light purple */
+            color: #4f46e5; /* Darker purple text */
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        .button-secondary:hover {
+            background-color: #c7d2fe;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        .button-secondary:active {
+            background-color: #a5b4fc;
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .error-message {
+            color: #ef4444; /* Standard red for errors */
+            font-size: 0.875rem; /* text-sm */
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            border: 1px solid #e5e7eb;
+        }
+        .message-box h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .message-box p {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #555;
+        }
+        .message-box button {
+            background-color: #6366f1; /* Consistent primary color for message box button */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .message-box button:hover {
+            background-color: #4f46e5;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0; /* Remove gap for column layout */
+            }
+            .form-row .form-group {
+                margin-bottom: 28px; /* Restore margin for column layout */
+            }
+            .container {
+                padding: 24px; /* Adjust padding for smaller screens */
+            }
+        }
         @media print {
             body * {
                 visibility: hidden;
             }
-            #print-section, #print-section * {
+            #printableArea, #printableArea * {
                 visibility: visible;
             }
-            #print-section {
+            #printableArea {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
+                padding: 20px;
+                box-sizing: border-box;
             }
             .no-print {
-                display: none;
+                display: none !important;
             }
-        }
-        /* Message box style */
-        .message-box {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #4CAF50; /* Green */
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .message-box.show {
-            opacity: 1;
-        }
-        .message-box.error {
-            background-color: #f44336; /* Red */
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen">
-
-    <div class="container mx-auto p-4 sm:p-6 md:p-8 no-print">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 tracking-tight">Minor Course Selector</h1>
-            <p class="mt-2 text-lg text-gray-600">Providence Women's College (Autonomous), Kozhikode</p>
-        </header>
-
-        <main id="app" class="max-w-6xl mx-auto">
-            <!-- Student Details -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
-                 <h2 class="text-xl font-semibold text-gray-700 mb-4">1. Enter Your Details</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
-                        <label for="student-name" class="block text-sm font-medium text-gray-700">Student Name</label>
-                        <input type="text" id="student-name" class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label for="admission-no" class="block text-sm font-medium text-gray-700">Admission Number</label>
-                        <input type="text" id="admission-no" class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label for="phone-no" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input type="tel" id="phone-no" class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                        <input type="email" id="email" class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                     <div>
-                        <label for="department-select" class="block text-sm font-medium text-gray-700">Major Department</label>
-                        <select id="department-select" class="mt-1 w-full p-2 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 transition">
-                            <option value="">-- Choose your department --</option>
-                        </select>
-                    </div>
-                 </div>
-            </div>
-
-            <!-- Selections Display -->
-            <div id="selection-container" class="bg-white p-6 rounded-2xl shadow-lg mb-8 hidden">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">2. Your Selected Minors (Choose up to 2)</h2>
-                <div id="selected-courses-display" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex items-center justify-center h-20 bg-gray-100 rounded-lg text-gray-500">Selection 1</div>
-                    <div class="flex items-center justify-center h-20 bg-gray-100 rounded-lg text-gray-500">Selection 2</div>
-                </div>
-                 <p id="selection-message" class="text-center text-sm text-red-500 mt-4 font-medium hidden">You can only select two minor courses.</p>
-            </div>
-
-
-            <!-- Available Courses List -->
-            <div id="courses-container" class="hidden">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">3. Available Minor Courses</h2>
-                <div id="courses-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <!-- Course cards will be injected here -->
-                </div>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div id="button-container" class="text-center mt-8 space-y-4">
-                <button id="print-button" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Save & Print Selections
-                </button>
-                 <div id="change-button-container" class="hidden">
-                    <button id="change-button" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-300 transition">
-                        Change Selections
-                    </button>
-                 </div>
-            </div>
-
-        </main>
+<body>
+    <div class="header-section">
+        <h1>Minor Course Selector</h1>
+        <p>Providence Women's College (Autonomous), Kozhikode</p>
     </div>
 
-    <!-- Hidden section for printing -->
-    <div id="print-section" class="hidden"></div>
+    <div class="container">
+        <div id="studentDetailsForm" class="no-print">
+            <h2>1. Enter Your Details</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="studentName">Student Name</label>
+                    <input type="text" id="studentName" placeholder="">
+                    <p id="nameError" class="error-message hidden">Please enter your name.</p>
+                </div>
+                <div class="form-group">
+                    <label for="admissionNumber">Admission Number</label>
+                    <input type="text" id="admissionNumber" placeholder="">
+                    <p id="admissionError" class="error-message hidden">Please enter your admission number.</p>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="">
+                    <p id="phoneError" class="error-message hidden">Please enter a valid 10-digit phone number.</p>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="">
+                    <p id="emailError" class="error-message hidden">Please enter a valid email address.</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="department">Major Department</label>
+                <select id="department">
+                    <option value="">-- Choose your department --</option>
+                </select>
+                <p id="departmentError" class="error-message hidden">Please select your department.</p>
+            </div>
+        </div>
 
-    <!-- Message Box -->
-    <div id="message-box" class="message-box hidden"></div>
+        <div id="courseSelectionSection" class="hidden no-print">
+            <h3>2. Select Your Minor Courses (Select two)</h3>
+            <div id="availableCourses" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Courses will be loaded here -->
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                <button id="submitBtn" class="button button-primary hidden">Submit Selection</button>
+                <button id="changeOptionsBtn" class="button button-secondary hidden">Change Options</button>
+                <button id="changeDepartmentBtn" class="button button-secondary">Change Department</button>
+            </div>
+        </div>
 
-    <script>
-        // !! IMPORTANT !! This URL has been updated with the one you provided.
-        const GOOGLE_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwFzn1HqqCq76dQ1HDKM8H6aiWOa5m2PTYN3EG_UiOPFQHFBKgntAIVyT2gJOS5aSjd_Q/exec'; 
+        <div id="submissionMessage" class="hidden text-center mt-8">
+            <h3 class="text-2xl font-semibold text-green-700 mb-4">Your selection has been submitted successfully!</h3>
+            <p class="text-gray-600 mb-6">You can now print your details if needed.</p>
+            <div class="flex justify-center">
+                <button id="printBtn" class="button button-secondary no-print">
+                    Print Confirmation
+                </button>
+            </div>
+        </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const courseData = [
-                { department: "BBA", minors: ["Communicating with Financial Data", "Marketing Management"] },
-                { department: "Botany", minors: ["Plant Ecology, Conservation & Plant Interactions"] },
-                { department: "Chemistry", minors: ["Basic Inorganic and Nano Chemistry", "Basic Inorganic and Bio-Inorganic Chemistry", "Basic Inorganic and Green Chemistry"] },
-                { department: "Commerce", minors: ["Essentials of Marketing", "Advertisement and Sales Promotion"] },
-                { department: "B.Com Professional with ACCA", minors: ["Fundamentals of Entrepreneurship", "Entrepreneurial Marketing"] },
-                { department: "Computer Science", minors: ["Python Programming"] },
-                { department: "Economics", minors: ["Sectoral Contributions in Indian Economy", "Development Issues in Indian Economy", "Fiscal tools for policy Stabilisation"] },
-                { department: "English", minors: ["Fundamentals of content creation", "The Language of Digital Space: English and New Media"] },
-                { department: "Hindi", minors: ["Anuvad- Prakriya Aur Pravidhi"] },
-                { department: "History", minors: ["Food - A Global Perspective", "Gender History", "Introduction to Historical Tourism"] },
-                { department: "HRM", minors: ["Front Office Management", "Management Principles and Business Ethics"] },
-                { department: "Political Science", minors: ["Human Rights", "Introduction to International Politics", "A Preface to Indian Constitution"] },
-                { department: "Mathematics", minors: ["Mathematical Logic, Set Theory and Combinatorics", "Calculus", "Differential Calculus"] },
-                { department: "Malayalam", minors: ["കവിതസാഹിത്യം (Poetry Literature)"] },
-                { department: "Physics", minors: ["Properties of Matter and Thermodynamics", "Mechanics and Optics"] },
-                { department: "Psychology", minors: ["Gateway to Mind and Behaviour", "Basics in Cellular Physiology"] },
-                { department: "Statistics", minors: ["Descriptive Statistics for Data Science", "Descriptive statistics", "Introductory Statistics with R"] },
-                { department: "Social Work", minors: ["Social Analysis and Strategies of Social Change", "Fundamentals of Professional Social Work"] },
-                { department: "TTM", minors: ["Fundamentals of Tourism", "Tourism Business"] },
-                { department: "Zoology", minors: ["Foundations of Environmental Biology & Animal Behaviour"] }
-            ];
+        <!-- Printable Area -->
+        <div id="printableArea" class="hidden">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Minor Course Selection Confirmation</h2>
+            <div class="mb-4">
+                <p class="text-lg font-semibold">Student Name: <span id="printName" class="font-normal"></span></p>
+                <p class="text-lg font-semibold">Admission Number: <span id="printAdmissionNumber" class="font-normal"></span></p>
+                <p class="text-lg font-semibold">Phone Number: <span id="printPhone" class="font-normal"></span></p>
+                <p class="text-lg font-semibold">Email: <span id="printEmail" class="font-normal"></span></p>
+                <p class="text-lg font-semibold">Department: <span id="printDepartment" class="font-normal"></span></p>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-4">Selected Minor Courses:</h3>
+            <ul id="printCourses" class="list-disc list-inside text-lg text-gray-700"></ul>
+        </div>
+    </div>
 
-            const departmentSelect = document.getElementById('department-select');
-            const coursesContainer = document.getElementById('courses-container');
-            const coursesGrid = document.getElementById('courses-grid');
-            const selectionContainer = document.getElementById('selection-container');
-            const selectedCoursesDisplay = document.getElementById('selected-courses-display');
-            const selectionMessage = document.getElementById('selection-message');
-            const printButton = document.getElementById('print-button');
-            const printSection = document.getElementById('print-section');
-            const studentNameInput = document.getElementById('student-name');
-            const admissionNoInput = document.getElementById('admission-no');
-            const phoneNoInput = document.getElementById('phone-no');
-            const emailInput = document.getElementById('email'); 
-            const changeButtonContainer = document.getElementById('change-button-container');
-            const changeButton = document.getElementById('change-button');
-            const messageBox = document.getElementById('message-box');
+    <!-- Custom Message Box -->
+    <div id="messageOverlay" class="overlay hidden"></div>
+    <div id="messageBox" class="message-box hidden">
+        <h3 id="messageBoxTitle"></h3>
+        <p id="messageBoxContent"></p>
+        <button id="messageBoxClose">OK</button>
+    </div>
 
-            let selectedCourses = [];
+    <script type="module">
+        // Minor courses data based on the provided image
+        const minorCoursesData = [
+            { department: "BBA", minors: ["Communicating with Financial Data", "Marketing Management"] },
+            { department: "Botany", minors: ["Plant Ecology, Conservation & Plant Interactions"] },
+            { department: "Chemistry", minors: ["Basic Inorganic and Nano Chemistry", "Basic Inorganic and Bio-Inorganic Chemistry", "Basic Inorganic and Green Chemistry"] },
+            { department: "Commerce", minors: ["Essentials of Marketing", "Advertisement and Sales Promotion"] },
+            { department: "B.Com Professional with ACCA", minors: ["Fundamentals of Entrepreneurship", "Entrepreneurial Marketing"] },
+            { department: "Computer Science", minors: ["Python Programming"] },
+            { department: "Economics", minors: ["Sectoral Contributions in Indian Economy", "Development Issues in Indian Economy", "Fiscal tools for policy Stabilisation"] },
+            { department: "English", minors: ["Fundamentals of content creation", "The Language of Digital Space: English and New Media"] },
+            { department: "Hindi", minors: ["Anuvad- Prakriya Aur Pravidhi"] },
+            { department: "History", minors: ["Food - A Global Perspective", "Gender History", "Introduction to Historical Tourism"] },
+            { department: "HRM", minors: ["Front Office Management", "Management Principles and Business Ethics"] },
+            { department: "Political Science", minors: ["Human Rights", "Introduction to International Politics", "A Preface to Indian Constitution"] },
+            { department: "Mathematics", minors: ["Mathematical Logic, Set Theory and Combinatorics", "Calculus"] },
+            { department: "Malayalam", minors: ["കവിതയും സാഹിത്യം"] },
+            { department: "Physics", minors: ["Properties of Matter and Thermodynamics", "Mechanics and Optics"] },
+            { department: "Psychology", minors: ["Gateway to Mind and Behaviour", "Basic in Cellular Physiology"] },
+            { department: "Statistics", minors: ["Descriptive Statistics for Data Science", "Descriptive statistics", "Introductory Statistics with R"] },
+            { department: "Social Work", minors: ["Social Analysis and Strategies of Social Change", "Fundamentals of Professional Social Work"] },
+            { department: "TTM", minors: ["Fundamentals of Tourism", "Tourism Business"] },
+            { department: "Zoology", minors: ["Foundations of Environmental Biology & Animal Behaviour"] }
+        ];
 
-            // Function to show a temporary message
-            const showMessage = (msg, type = 'success') => {
-                messageBox.textContent = msg;
-                messageBox.className = `message-box show bg-${type === 'success' ? 'green' : 'red'}-500`;
-                messageBox.classList.remove('hidden');
-                setTimeout(() => {
-                    messageBox.classList.add('hidden');
-                }, 3000);
-            };
+        let selectedDepartment = '';
+        let selectedCourses = [];
+        let studentInfo = {}; // Object to store student details for printing
 
-            // 1. Populate department dropdown
-            courseData.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.department;
-                option.textContent = item.department;
-                departmentSelect.appendChild(option);
-            });
-            
-            // Utility to create a placeholder card
-            const createPlaceholderCard = (text) => {
-                 return `<div class="flex items-center justify-center h-20 bg-gray-100 rounded-lg text-gray-500">${text}</div>`;
-            };
-            
-            const checkFormCompletion = () => {
-                const isDetailsFilled = studentNameInput.value.trim() !== '' &&
-                                        admissionNoInput.value.trim() !== '' &&
-                                        phoneNoInput.value.trim() !== '' &&
-                                        emailInput.value.trim() !== '' &&
-                                        departmentSelect.value !== '';
-                const areCoursesSelected = selectedCourses.length === 2;
-                printButton.disabled = !(isDetailsFilled && areCoursesSelected);
-            };
-
-            // Add event listeners to input fields
-            [studentNameInput, admissionNoInput, phoneNoInput, emailInput, departmentSelect].forEach(input => {
-                input.addEventListener('input', checkFormCompletion);
-            });
-
-
-            // 2. Handle department selection change
-            departmentSelect.addEventListener('change', (e) => {
-                const selectedDept = e.target.value;
-                selectedCourses = []; // Reset selections
-                updateSelectedCoursesDisplay();
-                selectionMessage.classList.add('hidden');
-                updateSelectionState(); // Reset disabled cards
-
-                if (selectedDept) {
-                    displayAvailableCourses(selectedDept);
-                    selectionContainer.classList.remove('hidden');
-                    coursesContainer.classList.remove('hidden'); 
-                } else {
-                    coursesContainer.classList.add('hidden');
-                    selectionContainer.classList.add('hidden');
+        // A map to quickly find which department offers a specific minor course
+        const courseToDepartmentMap = {};
+        minorCoursesData.forEach(deptData => {
+            deptData.minors.forEach(minor => {
+                // Handle cases where a minor might be offered by multiple departments by picking the first one
+                if (!courseToDepartmentMap[minor]) {
+                    courseToDepartmentMap[minor] = deptData.department;
                 }
-                checkFormCompletion();
-            });
-
-            // 3. Display available courses
-            const displayAvailableCourses = (majorDept) => {
-                coursesGrid.innerHTML = ''; // Clear previous courses
-                const availableCourses = courseData.filter(item => item.department !== majorDept);
-
-                availableCourses.forEach(dept => {
-                    dept.minors.forEach(minor => {
-                        const card = document.createElement('div');
-                        card.className = 'course-card bg-white p-4 rounded-lg border-2 border-transparent cursor-pointer flex flex-col justify-between';
-                        card.dataset.course = minor;
-                        card.dataset.department = dept.department;
-                        
-                        card.innerHTML = `
-                            <h3 class="font-semibold text-gray-800">${minor}</h3>
-                            <p class="text-sm text-indigo-600 font-medium mt-2">${dept.department}</p>
-                        `;
-                        
-                        card.addEventListener('click', () => handleCourseSelection(card));
-                        coursesGrid.appendChild(card);
-                    });
-                });
-            };
-
-            // 4. Handle course selection logic
-            const handleCourseSelection = (card) => {
-                const courseName = card.dataset.course;
-                const courseDept = card.dataset.department;
-
-                const index = selectedCourses.findIndex(c => c.name === courseName);
-
-                if (index > -1) {
-                    // Deselect course
-                    selectedCourses.splice(index, 1);
-                    card.classList.remove('selected');
-                } else {
-                    // Select course if limit not reached
-                    if (selectedCourses.length < 2) {
-                        selectedCourses.push({ name: courseName, department: courseDept });
-                        card.classList.add('selected');
-                    }
-                }
-                
-                updateSelectionState();
-                updateSelectedCoursesDisplay();
-                checkFormCompletion();
-            };
-            
-            // 5. Update UI based on selection state (e.g., disable/enable cards)
-            const updateSelectionState = () => {
-                 const allCards = document.querySelectorAll('.course-card');
-                 if(selectedCourses.length >= 2) {
-                    allCards.forEach(card => {
-                        if(!card.classList.contains('selected')) {
-                            card.classList.add('disabled');
-                        }
-                    });
-                    selectionMessage.classList.remove('hidden');
-                    coursesContainer.classList.add('hidden');
-                    printButton.classList.remove('hidden');
-                    changeButtonContainer.classList.remove('hidden');
-                 } else {
-                    allCards.forEach(card => card.classList.remove('disabled'));
-                    selectionMessage.classList.add('hidden');
-                    coursesContainer.classList.remove('hidden');
-                    printButton.classList.remove('hidden'); 
-                    changeButtonContainer.classList.add('hidden');
-                 }
-            };
-
-            // 6. Update the "Your Selections" display area
-            const updateSelectedCoursesDisplay = () => {
-                selectedCoursesDisplay.innerHTML = '';
-                
-                for (let i = 0; i < 2; i++) {
-                    if (selectedCourses[i]) {
-                        const selected = selectedCourses[i];
-                        const card = document.createElement('div');
-                        card.className = 'bg-indigo-100 border border-indigo-300 p-4 rounded-lg';
-                        card.innerHTML = `
-                            <h4 class="font-semibold text-indigo-800">${selected.name}</h4>
-                            <p class="text-sm text-indigo-600">${selected.department}</p>
-                        `;
-                        selectedCoursesDisplay.appendChild(card);
-                    } else {
-                        selectedCoursesDisplay.innerHTML += createPlaceholderCard(`Selection ${i + 1}`);
-                    }
-                }
-            };
-
-            // Function to save data to Google Sheet
-            const saveToGoogleSheet = async (data) => {
-                try {
-                    console.log('Attempting to send data to Google Sheet endpoint:', GOOGLE_SHEET_ENDPOINT); 
-                    console.log('Data being sent:', data); 
-                    
-                    const response = await fetch(GOOGLE_SHEET_ENDPOINT, {
-                        method: 'POST',
-                        mode: 'cors', 
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data),
-                    });
-
-                    // Check if the response is OK (status 200-299)
-                    if (!response.ok) {
-                        const errorText = await response.text(); 
-                        console.error('HTTP Error:', response.status, response.statusText, errorText);
-                        if (response.status === 400 && errorText.includes("Admission Number")) {
-                             return { status: "error", message: `Error: ${errorText}. Please use a unique Admission Number.` };
-                        }
-                        return { status: "error", message: `Server error: ${response.status} ${response.statusText}. Details: ${errorText.substring(0, Math.min(errorText.length, 100))}...` };
-                    }
-
-                    const result = await response.json();
-                    console.log('Google Sheet response:', result);
-                    return result;
-
-                } catch (error) {
-                    console.error("Error saving to Google Sheet:", error);
-                    let errorMessage = "Network error or failed to connect to Google Sheet. Please check the GOOGLE_SHEET_ENDPOINT URL and your network connection.";
-                    if (error instanceof TypeError && error.message === "Failed to fetch") {
-                        errorMessage = "Could not reach the Google Apps Script. This might be due to an incorrect GOOGLE_SHEET_ENDPOINT URL or network issues. Ensure your Apps Script is deployed as a Web App with 'Anyone' access and its URL ends with '/exec'.";
-                    }
-                    return { status: "error", message: errorMessage };
-                }
-            };
-
-            // 7. Handle Print Button Click
-            printButton.addEventListener('click', async () => {
-                const studentName = studentNameInput.value;
-                const admissionNo = admissionNoInput.value;
-                const phoneNo = phoneNoInput.value;
-                const email = emailInput.value;
-                const majorDept = departmentSelect.value;
-                
-                // Data to save
-                const selectionData = {
-                    studentName: studentName,
-                    admissionNo: admissionNo,
-                    phoneNo: phoneNo,
-                    email: email,
-                    majorDepartment: majorDept,
-                    minorCourses: selectedCourses,
-                    selectionDate: new Date().toISOString()
-                };
-
-                // Attempt to save to Google Sheet first
-                const saveResult = await saveToGoogleSheet(selectionData);
-
-                if (saveResult.status === "success") {
-                    showMessage(saveResult.message, 'success');
-
-                    // Proceed with printing after successful save
-                    const printContent = `
-                        <div style="padding: 40px; font-family: 'Inter', sans-serif;">
-                            <div style="text-align: center; margin-bottom: 40px;">
-                                <h1 style="font-size: 24px; font-weight: bold; color: #111827;">Minor Course Selection Summary</h1>
-                                <p style="font-size: 16px; color: #4B5563;">Providence Women's College (Autonomous), Kozhikode</p>
-                            </div>
-                            <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
-                                 <h2 style="font-size: 18px; font-weight: 600; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">Student Details</h2>
-                                 <p><strong>Name:</strong> ${studentName}</p>
-                                 <p><strong>Admission No:</strong> ${admissionNo}</p>
-                                 <p><strong>Phone No:</strong> ${phoneNo}</p>
-                                 <p><strong>Email:</strong> ${email}</p>
-                                 <p><strong>Major Department:</strong> ${majorDept}</p>
-                            </div>
-                            <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
-                                 <h2 style="font-size: 18px; font-weight: 600; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">Selected Minor Courses</h2>
-                                 <div style="margin-bottom: 16px;">
-                                     <h3 style="font-weight: bold;">1. ${selectedCourses[0].name}</h3>
-                                     <p style="color: #4338ca;">Offered by: ${selectedCourses[0].department}</p>
-                                 </div>
-                                 <div>
-                                     <h3 style="font-weight: bold;">2. ${selectedCourses[1].name}</h3>
-                                     <p style="color: #4338ca;">Offered by: ${selectedCourses[1].department}</p>
-                                 </div>
-                            </div>
-                            <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280;">
-                                <p>Date: ${new Date().toLocaleDateString()}</p>
-                            </div>
-                        </div>
-                    `;
-
-                    printSection.innerHTML = printContent;
-                    printSection.classList.remove('hidden');
-                    window.print();
-                    printSection.classList.add('hidden');
-
-                } else {
-                    showMessage(saveResult.message, 'error');
-                }
-            });
-
-            // 8. Handle "Change Selections" button click
-            changeButton.addEventListener('click', () => {
-                selectedCourses = []; // Clear selections
-                updateSelectedCoursesDisplay();
-                updateSelectionState(); // This will show the course grid again
-                checkFormCompletion();
             });
         });
+
+        // UI Elements
+        const studentDetailsForm = document.getElementById('studentDetailsForm');
+        const courseSelectionSection = document.getElementById('courseSelectionSection');
+        const submissionMessage = document.getElementById('submissionMessage');
+        const printableArea = document.getElementById('printableArea');
+
+        const studentNameInput = document.getElementById('studentName');
+        const admissionNumberInput = document.getElementById('admissionNumber'); // New input
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const emailInput = document.getElementById('email');
+        const departmentSelect = document.getElementById('department');
+
+        const availableCoursesDiv = document.getElementById('availableCourses');
+        const submitBtn = document.getElementById('submitBtn');
+        const changeOptionsBtn = document.getElementById('changeOptionsBtn');
+        const changeDepartmentBtn = document.getElementById('changeDepartmentBtn');
+        const printBtn = document.getElementById('printBtn');
+
+        // Error message elements
+        const nameError = document.getElementById('nameError');
+        const admissionError = document.getElementById('admissionError'); // New error element
+        const phoneError = document.getElementById('phoneError');
+        const emailError = document.getElementById('emailError');
+        const departmentError = document.getElementById('departmentError');
+
+        // Message box elements
+        const messageOverlay = document.getElementById('messageOverlay');
+        const messageBox = document.getElementById('messageBox');
+        const messageBoxTitle = document.getElementById('messageBoxTitle');
+        const messageBoxContent = document.getElementById('messageBoxContent');
+        const messageBoxClose = document.getElementById('messageBoxClose');
+
+        /**
+         * Displays a custom message box to the user.
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The content message.
+         * @param {boolean} [isError=false] - True if it's an error message, changes title color.
+         */
+        function showMessage(title, message, isError = false) {
+            messageBoxTitle.textContent = title;
+            messageBoxContent.textContent = message;
+            messageBoxTitle.style.color = isError ? '#ef4444' : '#6366f1'; /* Adjusted colors for messages */
+            messageOverlay.classList.remove('hidden');
+            messageBox.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the custom message box.
+         */
+        function hideMessage() {
+            messageOverlay.classList.add('hidden');
+            messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Validates an email address.
+         * @param {string} email - The email string to validate.
+         * @returns {boolean} True if the email is valid, false otherwise.
+         */
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        /**
+         * Validates a 10-digit phone number.
+         * @param {string} phone - The phone number string to validate.
+         * @returns {boolean} True if the phone number is valid, false otherwise.
+         */
+        function validatePhoneNumber(phone) {
+            const re = /^\d{10}$/; // Assumes a 10-digit phone number
+            return re.test(String(phone));
+        }
+
+        /**
+         * Validates the student details form fields.
+         * Shows error messages next to invalid fields.
+         * @returns {boolean} True if all fields are valid, false otherwise.
+         */
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous errors
+            nameError.classList.add('hidden');
+            admissionError.classList.add('hidden'); // Clear new error
+            phoneError.classList.add('hidden');
+            emailError.classList.add('hidden');
+            departmentError.classList.add('hidden');
+
+            if (studentNameInput.value.trim() === '') {
+                nameError.classList.remove('hidden');
+                isValid = false;
+            }
+            if (admissionNumberInput.value.trim() === '') { // New validation
+                admissionError.classList.remove('hidden');
+                isValid = false;
+            }
+            if (!validatePhoneNumber(phoneNumberInput.value.trim())) {
+                phoneError.classList.remove('hidden');
+                isValid = false;
+            }
+            if (!validateEmail(emailInput.value.trim())) {
+                emailError.classList.remove('hidden');
+                isValid = false;
+            }
+            if (departmentSelect.value === '') {
+                departmentError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        /**
+         * Populates the department dropdown with data from `minorCoursesData`.
+         */
+        function loadDepartments() {
+            const currentSelectedDept = departmentSelect.value;
+            departmentSelect.innerHTML = '<option value="">-- Choose your department --</option>'; // Updated placeholder
+
+            minorCoursesData.forEach(data => {
+                const option = document.createElement('option');
+                option.value = data.department;
+                option.textContent = data.department;
+                departmentSelect.appendChild(option);
+            });
+
+            if (currentSelectedDept && minorCoursesData.some(d => d.department === currentSelectedDept)) {
+                departmentSelect.value = currentSelectedDept;
+            }
+        }
+
+        /**
+         * Sets up all event listeners for UI interactions.
+         */
+        function setupUI() {
+            messageBoxClose.addEventListener('click', hideMessage);
+            loadDepartments(); // Populate department dropdown on initial load
+
+            // Handle department selection change
+            departmentSelect.addEventListener('change', () => {
+                // Store current form inputs
+                studentInfo.name = studentNameInput.value.trim();
+                studentInfo.admissionNumber = admissionNumberInput.value.trim(); // Store new field
+                studentInfo.phoneNumber = phoneNumberInput.value.trim();
+                studentInfo.email = emailInput.value.trim();
+                studentInfo.department = departmentSelect.value;
+
+                if (studentInfo.department === "") {
+                    courseSelectionSection.classList.add('hidden'); // Hide course section if no department selected
+                    return;
+                }
+
+                if (validateForm()) {
+                    selectedDepartment = studentInfo.department;
+                    studentDetailsForm.classList.add('hidden');
+                    courseSelectionSection.classList.remove('hidden');
+                    displayAvailableCourses();
+                } else {
+                    showMessage("Validation Error", "Please fill in all your personal details correctly before selecting a department.", true);
+                    // Reset department selection if validation fails, prompting user to re-select after fixing details
+                    departmentSelect.value = "";
+                }
+            });
+
+            submitBtn.addEventListener('click', async () => {
+                if (selectedCourses.length === 2) {
+                    await submitSelection();
+                } else {
+                    showMessage("Selection Error", "Please select exactly two minor courses.", true);
+                }
+            });
+
+            changeOptionsBtn.addEventListener('click', () => {
+                selectedCourses = []; // Reset selections
+                displayAvailableCourses(); // Re-render to show all options based on current department
+            });
+
+            changeDepartmentBtn.addEventListener('click', () => {
+                // Go back to the student details form
+                studentDetailsForm.classList.remove('hidden');
+                courseSelectionSection.classList.add('hidden');
+                submissionMessage.classList.add('hidden');
+                selectedCourses = []; // Clear course selections when changing department
+                loadDepartments(); // Re-populate departments to ensure state consistency
+            });
+
+            printBtn.addEventListener('click', () => {
+                preparePrintArea();
+                window.print(); // Directly opens the print dialog
+            });
+        }
+
+        /**
+         * Displays all available minor courses, explicitly excluding those from the student's own department.
+         */
+        function displayAvailableCourses() {
+            availableCoursesDiv.innerHTML = ''; // Clear previous courses
+
+            const studentDeptCourses = minorCoursesData.find(data => data.department === selectedDepartment)?.minors || [];
+
+            // Get all unique minor courses from the dataset
+            let allUniqueMinorCourses = new Set();
+            minorCoursesData.forEach(data => {
+                data.minors.forEach(minor => allUniqueMinorCourses.add(minor));
+            });
+
+            // Filter out courses offered by the student's own department
+            const eligibleMinorCourses = Array.from(allUniqueMinorCourses).filter(course =>
+                !studentDeptCourses.includes(course)
+            );
+
+            // Sort eligible courses alphabetically for consistent display
+            eligibleMinorCourses.sort();
+
+            if (eligibleMinorCourses.length === 0) {
+                availableCoursesDiv.innerHTML = '<p class="text-center text-gray-500 text-lg py-8">No minor courses available for selection from other departments.</p>';
+                submitBtn.classList.add('hidden');
+                changeOptionsBtn.classList.add('hidden');
+                return;
+            }
+
+            eligibleMinorCourses.forEach(course => {
+                const courseCard = document.createElement('div');
+                courseCard.classList.add('course-card');
+                courseCard.dataset.courseName = course; // Store course name for easy lookup
+
+                // Add course name and department to the card
+                const courseNameDiv = document.createElement('div');
+                courseNameDiv.classList.add('course-name');
+                courseNameDiv.textContent = course;
+
+                const offeredByDiv = document.createElement('div');
+                offeredByDiv.classList.add('offered-by');
+                offeredByDiv.textContent = `Offered by: ${courseToDepartmentMap[course] || 'N/A'}`; // Show offering department
+
+                courseCard.appendChild(courseNameDiv);
+                courseCard.appendChild(offeredByDiv);
+
+                courseCard.addEventListener('click', () => toggleCourseSelection(courseCard, course));
+                availableCoursesDiv.appendChild(courseCard);
+            });
+            updateCourseCardStates(); // Initial state update for selected/hidden cards
+        }
+
+        /**
+         * Toggles the selection state of a course.
+         * @param {HTMLElement} cardElement - The DOM element of the course card.
+         * @param {string} courseName - The name of the course.
+         */
+        function toggleCourseSelection(cardElement, courseName) {
+            const index = selectedCourses.indexOf(courseName);
+
+            if (index > -1) {
+                // Course already selected, deselect it
+                selectedCourses.splice(index, 1);
+                cardElement.classList.remove('selected');
+            } else {
+                // Course not selected, try to select it
+                if (selectedCourses.length < 2) {
+                    selectedCourses.push(courseName);
+                    cardElement.classList.add('selected');
+                } else {
+                    showMessage("Selection Limit", "You can only select two minor courses.", true);
+                }
+            }
+            updateCourseCardStates(); // Update UI after selection change
+        }
+
+        /**
+         * Updates the visual state of all course cards (selected/deselected).
+         * Also controls the visibility of submit/change options buttons.
+         */
+        function updateCourseCardStates() {
+            const courseCards = availableCoursesDiv.querySelectorAll('.course-card');
+
+            // Step 1: Update selected/deselected visual states
+            courseCards.forEach(card => {
+                const courseName = card.dataset.courseName;
+                if (selectedCourses.includes(courseName)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            // Step 2: Manage visibility based on selection count
+            if (selectedCourses.length === 2) {
+                // If two courses are selected, hide all unselected cards
+                courseCards.forEach(card => {
+                    if (!card.classList.contains('selected')) {
+                        card.classList.add('hidden'); // Hide unselected cards
+                    }
+                });
+                submitBtn.classList.remove('hidden');
+                changeOptionsBtn.classList.remove('hidden');
+            } else {
+                // If less than two courses are selected, ensure all eligible cards are visible
+                courseCards.forEach(card => {
+                    card.classList.remove('hidden'); // Show all cards again
+                });
+                submitBtn.classList.add('hidden');
+                changeOptionsBtn.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles the submission of the selected courses to Google Sheet.
+         * Displays a success message and transitions to the confirmation view.
+         */
+        async function submitSelection() {
+            // Replace this with your actual Google Apps Script Web App URL
+            const googleAppsScriptURL = 'https://script.google.com/macros/s/AKfycbxhX6NQWcjYsUqxODxJ1M4s_CQSNtYng1I4v53fV-JX1297VHohVxJwlVu-Dz_b1nIIhw/exec';
+
+            const submissionDetails = {
+                name: studentInfo.name,
+                admissionNumber: studentInfo.admissionNumber, // Add new field to submission
+                phoneNumber: studentInfo.phoneNumber,
+                email: studentInfo.email,
+                department: studentInfo.department,
+                selectedMinors: selectedCourses,
+            };
+
+            try {
+                const response = await fetch(googleAppsScriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Use 'no-cors' for simple requests to Google Apps Script from client-side
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(submissionDetails),
+                });
+
+                // In 'no-cors' mode, response.ok will always be true and response.status will be 0.
+                // We assume success if no network error occurred.
+                // For actual error handling, you'd need a CORS-enabled backend or different approach.
+
+                showMessage("Success!", "Your minor course selection has been submitted successfully to the college.", false);
+                console.log("Submission initiated. Check your Google Sheet for data.");
+
+                // Transition UI to submission confirmation
+                courseSelectionSection.classList.add('hidden');
+                submissionMessage.classList.remove('hidden');
+
+                // Update printable area with current data
+                updatePrintableArea(submissionDetails);
+
+            } catch (error) {
+                console.error("Error submitting data to Google Sheet:", error);
+                showMessage("Submission Failed", "There was an error submitting your selection. Please check your internet connection and the Apps Script URL. " + error.message, true);
+            }
+        }
+
+        /**
+         * Populates the printable area with the student's details and selected courses.
+         * @param {Object} data - The student's submission data.
+         */
+        function updatePrintableArea(data) {
+            document.getElementById('printName').textContent = data.name;
+            document.getElementById('printAdmissionNumber').textContent = data.admissionNumber; // Update new field in print
+            document.getElementById('printPhone').textContent = data.phoneNumber;
+            document.getElementById('printEmail').textContent = data.email;
+            document.getElementById('printDepartment').textContent = data.department;
+
+            const printCoursesList = document.getElementById('printCourses');
+            printCoursesList.innerHTML = '';
+            data.selectedMinors.forEach(course => {
+                const li = document.createElement('li');
+                li.textContent = course;
+                printCoursesList.appendChild(li);
+            });
+        }
+
+        /**
+         * Prepares the printable area by making it visible and hiding other sections.
+         */
+        function preparePrintArea() {
+            printableArea.classList.remove('hidden');
+            studentDetailsForm.classList.add('hidden');
+            courseSelectionSection.classList.add('hidden');
+            // Keep submission message visible for context during print
+            submissionMessage.classList.remove('hidden');
+        }
+
+        // Initialize the UI when the page loads
+        window.addEventListener('load', setupUI);
     </script>
 </body>
 </html>
