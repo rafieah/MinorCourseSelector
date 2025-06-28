@@ -833,7 +833,9 @@
             printCoursesList.innerHTML = '';
             data.selectedMinors.forEach(course => {
                 const li = document.createElement('li');
-                li.textContent = course;
+                // Use courseToDepartmentMap to get the offering department
+                const offeredBy = courseToDepartmentMap[course] ? ` (Offered by: ${courseToDepartmentMap[course]})` : '';
+                li.textContent = `${course}${offeredBy}`;
                 printCoursesList.appendChild(li);
             });
         }
